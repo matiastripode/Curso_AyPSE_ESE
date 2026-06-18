@@ -1,10 +1,10 @@
 <p align="center">
 <img src="banner.png">
 <br>
-<img alt="GitHub forks" src="https://img.shields.io/github/forks/prototipado/EProgramable_FIUNER?style=flat&logo=github">
-<img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/t/prototipado/EProgramable_FIUNER?style=flat&logo=github">
-<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/prototipado/EProgramable_FIUNER?style=flat&logo=github">
-<img alt="GitHub last commit" src="https://img.shields.io/github/repo-size/prototipado/EProgramable_FIUNER?style=flat&logo=github">
+<img alt="GitHub forks" src="https://img.shields.io/github/forks/prototipado/Curso_AyPSE_ESE?style=flat&logo=github">
+<img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/t/prototipado/Curso_AyPSE_ESE?style=flat&logo=github">
+<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/prototipado/Curso_AyPSE_ESE?style=flat&logo=github">
+<img alt="GitHub last commit" src="https://img.shields.io/github/repo-size/prototipado/Curso_AyPSE_ESE?style=flat&logo=github">
 </p>
 
 # Curso: Arquitectura y Programación de Sistemas Embebidos
