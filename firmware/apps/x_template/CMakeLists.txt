@@ -9,5 +9,9 @@ list(APPEND EXTRA_COMPONENT_DIRS "../../drivers_hal")
 include_directories(${PROJECT_NAME} ../../middleware)
 include_directories(${PROJECT_NAME} ../../board_support)
 include_directories(${PROJECT_NAME} ../../drivers_hal)
+
+# Restrict compiled components to isolate the framework and hide unwanted drivers
+set(COMPONENTS main middleware board_support drivers_hal)
+
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(x_template)

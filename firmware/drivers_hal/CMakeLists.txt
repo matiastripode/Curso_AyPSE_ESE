@@ -9,4 +9,4 @@ set(includes "inc")
 
 idf_component_register(SRCS ${srcs}
                        INCLUDE_DIRS ${includes}
-                       REQUIRES esp_driver_gpio)
+                       PRIV_REQUIRES esp_driver_gpio)

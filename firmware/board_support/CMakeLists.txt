@@ -9,4 +9,4 @@ set(includes "inc")
 
 idf_component_register(SRCS ${srcs}
                        INCLUDE_DIRS ${includes}
-                       REQUIRES drivers_hal)
+                       PRIV_REQUIRES drivers_hal)
