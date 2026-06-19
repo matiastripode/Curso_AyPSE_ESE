@@ -20,8 +20,7 @@ El mismo está pensado para ser utilizado con la placa ESP32-C6-DevKitC-1.
 4. [Grabación y Depuración](./documentación/depuración.md)
 5. [Proyecto nuevo](./documentación/proyecto_nuevo.md)
 6. [Actualización de Repositorio](./documentación/repositorio2.md)
-7. [Detalles del Hardware](./documentación/hardware.md)
-8. [Estructura de Firmware](./firmware/README.md)
+7. [Estructura de Firmware](./firmware/README.md)
 
 ## Enlaces de Interés
 

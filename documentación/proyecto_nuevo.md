@@ -4,8 +4,8 @@ A continuación se detallan los pasos para crear un nuevo proyecto a partir del 
 
 ## Crear proyecto nuevo
 
-1. Desde su explorador de archivos realice una copia de la carpeta `x_template` (ubicada en `C:/Repositorios/EProgramable_ESP32/firmware/projects/`)
-y renómbrela según el proyecto a realizar (en este ejemplo se reemplazará `x_template - copia` por `guia1_ej2`).
+1. Desde su explorador de archivos realice una copia de la carpeta `x_template` (ubicada en `C:/Repositorios/AyPSE/firmware/projects/`)
+y renómbrela según el proyecto a realizar (en este ejemplo se reemplazará `x_template - copia` por `proyecto_123`).
 
     ![proyecto1](./imágenes/proyecto1.png)
 
@@ -23,14 +23,14 @@ y renómbrela según el proyecto a realizar (en este ejemplo se reemplazará `x_
 
     ![proyecto4](./imágenes/proyecto4.png)
 
-6. Abra el archivo `CMakeLists.txt` ubicado en la carpeta `guia1_ej2` y modifique el nombre del proyecto en la línea 9 (en este caso reemplazar `project(x_template)` por `project(guia1_ej2)`).  
+6. Abra el archivo `CMakeLists.txt` ubicado en la carpeta `proyecto_123` y modifique el nombre del proyecto en la línea 9 (en este caso reemplazar `project(x_template)` por `project(proyecto_123)`).  
 
     ![proyecto6](./imágenes/proyecto6.png)
 
 > [!IMPORTANT]
 > No repetir nombres entre proyectos distintos, ya que puede traer problemas a la hora de Depurar (el programa utiliza el nombre del proyecto para nombrar los binarios creados en el proceso de compilación).
 
-7. Para comenzar a trabajar con el mismo, primero debe seleccionarlo como proyecto activo (presione el botón ![file](https://raw.githubusercontent.com/microsoft/vscode-icons/2ca0f3225c1ecd16537107f60f109317fcfc3eb0/icons/dark/file-submodule.svg) (`ESP-IDF: Current Project`) y luego seleccione `guia1_ej2`).
+7. Para comenzar a trabajar con el mismo, primero debe seleccionarlo como proyecto activo (presione el botón ![file](https://raw.githubusercontent.com/microsoft/vscode-icons/2ca0f3225c1ecd16537107f60f109317fcfc3eb0/icons/dark/file-submodule.svg) (`ESP-IDF: Current Project`) y luego seleccione `proyecto_123`).
 
     ![proyecto5](./imágenes/proyecto5.png)
 
@@ -43,8 +43,8 @@ y renómbrela según el proyecto a realizar (en este ejemplo se reemplazará `x_
     ![proyecto8](./imágenes/proyecto8.png)
 
 > [!NOTE]
-> Cada proyecto tiene dos archivos `CMakeLists.txt` distintos: uno en la raiz del proyecto (`./guia1_ej2/CMakeLists.txt`) donde se modifica el nombre del proyecto, y otro dentro de la sub-carpeta `main` (`./guia1_ej2/main/CMakeLists.txt`) donde se modifica el nombre del archivo fuente (`.c`).
+> Cada proyecto tiene dos archivos `CMakeLists.txt` distintos: uno en la raiz del proyecto (`./proyecto_123/CMakeLists.txt`) donde se modifica el nombre del proyecto, y otro dentro de la sub-carpeta `main` (`./proyecto_123/main/CMakeLists.txt`) donde se modifica el nombre del archivo fuente (`.c`).
 
 ---
 
-Una vez resuelto el ejercicio 2 puede segir la guía [Actualización de Repositorio](./repositorio2.md) par subir los cambios realizados.
+Una vez creado un nuevo proyecto, puede seguir la guía [Actualización de Repositorio](./repositorio2.md) para subir los cambios realizados.

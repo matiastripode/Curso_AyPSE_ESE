@@ -11,13 +11,13 @@ A continuación se detallan los pasos para la creación de su repositorio person
 
     ![repo1](./imágenes/repo1.png)
 
-2. Ingrese al repositorio de la cátedra: [github.com/prototipado/EProgramable_FIUNER](https://github.com/prototipado/EProgramable_FIUNER).
+2. Ingrese al repositorio del curso: [github.com/prototipado/Curso_AyPSE_ESE](https://github.com/prototipado/Curso_AyPSE_ESE).
 
-3. Haga click en la opción `Fork`. Esto creará una copia del repositorio de cátedra en su cuenta y le permitará que usted pueda modificarlo.
+3. Haga click en la opción `Fork`. Esto creará una copia del repositorio del curso en su cuenta y le permitará que usted pueda modificarlo.
 
     ![repo2](./imágenes/repo2.png)
 
-4. Ingrese el nombre de su repositorio como `[Apellido]_[Cuatrimestre]_[Año]`, por ejemplo, `Penalva_2C_2024`. Haga click en `Create fork`.
+4. Ingrese el nombre de su repositorio como `AyPSE_[Apellido]_[Año]`, por ejemplo, `AyPSE_Penalva_2026`. Haga click en `Create fork`.
 
     ![repo3](./imágenes/repo3.png)
 
@@ -41,7 +41,7 @@ A continuación se detallan los pasos para la creación de su repositorio person
 4. Ejecute el siguiente comando `git clone` seguido de la dirección de su repositorio. Por ejemplo:
 
     ```PowerShell
-    git clone https://github.com/albanopenalva/Penalva_2C_2024.git
+    git clone https://github.com/albanopenalva/AyPSE_Penalva_2026.git
     ```
 
 5. A continuación se descargará el Repositorio en la carpeta correspondiente.

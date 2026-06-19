@@ -71,10 +71,6 @@ En el mismo se muestran los mensajes enviados utilizando las funciones `printf()
 > [!IMPORTANT]
 > Al ejecutar el `Monitor` el microcontrolador se reinicia, por lo tanto los mensajes mostrados parten desde el inicio de la ejecución del programa grabado.
 
-3. También se puede modificar la configuración del puerto COM desde el archivo de configuración del workspace. Esto es útil cuando se va a trabajar durante todo el cursado con una misma PC
-(de modo contrario hay que modificar el puerto COM en cada proyecto). Para esto se debe abrir el archivo `EProgramable_C6.code-workspace` ubicado en `C:/Repositorios/ElectronicaProgramable_ESP32/firmware/`
-y modificar la línea `"idf.portWin": "COM14",` colocando el número de puerto COM correspondiente.
-
-    ![monitor4](./imágenes/monitor4.png)
+---
 
 Ahora ya puede empezar a trabajar sobre un nuevo proyecto, siguiendo el instructivo [Proyecto Nuevo](./proyecto_nuevo.md).

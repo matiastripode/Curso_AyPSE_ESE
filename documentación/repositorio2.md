@@ -61,7 +61,7 @@ git config --global user.email albano.penalva@uner.edu.ar
     ![repo14](./imágenes/repo14.png)
 
 > [!NOTE]
-> Los repositorios utilizados serán públicos, por lo tanto cualquier persona con el link podrá ver su contenido y/o descargar su contenido (hacer *pull*). Pero solo el dueño del mismo puede modificarlo (hacer *puch*).
+> Los repositorios utilizados serán públicos, por lo tanto cualquier persona con el link podrá ver su contenido y/o descargar su contenido (hacer *pull*). Pero solo el dueño del mismo puede modificarlo (hacer *push*).
 
 4. Para asegurarse de que los cambios han impactado sobre el repositorio remoto, entre a la página de su repositorio y haga click en `Commits`.
 

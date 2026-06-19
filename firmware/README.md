@@ -44,7 +44,7 @@ graph TD
 * **Descripción:** Reemplaza los accesos directos al hardware y registros del microcontrolador por llamadas a funciones con un mayor nivel de abstracción. Su propósito es independizar las capas superiores del chip específico en uso. Abstrae periféricos internos del microcontrolador como temporizadores, UART, SPI, I2C, GPIO y ADC.
 
 ### 5. Capa de Drivers (Driver Layer / ESP-IDF)
-* **Descripción:** Software de bajo nivel específico del microcontrolador. Forma la base desde la cual el software de niveles superiores interactúa con y controla el microcontrolador. Para el ESP32 (y en particular el ESP32-C6 de este curso), se corresponde directamente con la API provista por el **ESP-IDF**.
+* **Descripción:** Software de bajo nivel específico del microcontrolador. Forma la base desde la cual el software de niveles superiores interactúa con y controla el microcontrolador. Para el ESP32, se corresponde directamente con la API provista por el **ESP-IDF**.
 
 ---
 
@@ -53,3 +53,4 @@ graph TD
 > - El flujo de llamadas debe ser siempre **hacia abajo** (las capas superiores llaman a las inferiores).
 > - Se debe evitar el **acoplamiento circular** o llamadas hacia arriba.
 > - Ningún archivo de la capa de **Aplicación** debe incluir cabeceras de bajo nivel del ESP-IDF si existe una abstracción HAL o BSP correspondiente.
+> - **Restricción por compilación (CMake):** Estas reglas de dependencia están configuradas de forma estricta mediante `PRIV_REQUIRES` en los archivos `CMakeLists.txt` de cada componente. Si intentas incluir una cabecera de una capa no permitida, como por ejemplo incluir `driver/gpio.h` (driver de ESP-IDF) desde la capa de Aplicación, el compilador arrojará un error de tipo `file not found`.
