@@ -2,12 +2,14 @@
 #define TEMPLATE_HAL_H
 
 /** @defgroup hal HAL
- *  @brief Capa de abstraccion de hardware.
+ *  @brief Hardware Abstraction Layer.
  *  @{
- */
-
-/** \brief Template HAL driver for the ESP32-C6.
+ *  @defgroup template_hal Template HAL
+ *  @brief Template driver for ESP32-C6.
+ *  @{
  *
+ * @section genDesc General Description
+ * 
  * This file is the template for developing a new Hardware Abstraction Layer (HAL)
  * driver. It wraps the low-level ESP-IDF peripheral API and exposes it through
  * a hardware-independent interface.
@@ -54,6 +56,9 @@ uint8_t TemplateHalInit(void);
  * Follow the naming convention: ModuleNameAction()
  * Examples: UartHalWrite(), AdcHalRead(), TimerHalStart()
  */
+
+/** @} */
+/** @} */
 
 #endif /* #ifndef TEMPLATE_HAL_H */
 
