@@ -42,11 +42,8 @@
 typedef enum {
     I2C_OK         = 0,       /*!< esp_err_t value indicating success (no error) */
     I2C_FAIL       = -1,      /*!< Generic esp_err_t code indicating failure */
-    I2C_ERR_NO_MEM              = -2,   /*!< Out of memory */
-    I2C_ERR_INVALID_ARG         = -3,   /*!< Invalid argument */
-    I2C_ERR_INVALID_STATE       = -4,   /*!< Invalid state */
-    I2C_ERR_INVALID_SIZE        = -5,   /*!< Invalid size */
-    I2C_ERR_NOT_FOUND           = -6,  /*!< Requested resource not found */
+    I2C_ERR_INVALID_ARG         = -2,   /*!< Invalid argument */
+    I2C_ERR_INVALID_STATE       = -3   /*!< Invalid state */
 } i2c_hal_error_t;
 
 typedef enum {
@@ -64,7 +61,7 @@ typedef enum {
  *
  * @return uint8_t true if initialization was successful, false otherwise.
  */
-i2c_hal_error_t I2CHalInit(i2c_hal_controller_t controller, uint32_t freq, gpio_t sda, gpio_t scl);
+i2c_hal_error_t I2CHalInit(i2c_hal_controller_t controller, uint8_t device_address, uint32_t freq, gpio_t sda, gpio_t scl);
 
 /**
  * @brief TODO: Add the remaining public functions of this driver.
