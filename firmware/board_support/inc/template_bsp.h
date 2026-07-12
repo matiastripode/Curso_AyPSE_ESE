@@ -2,16 +2,19 @@
 #define TEMPLATE_BSP_H
 
 /** @defgroup bsp BSP
- *  @brief Capa de board support package.
+ *  @brief Board support package layer.
  *  @{
- */
-/** \brief Template BSP driver for an external component.
+ *  @defgroup template_bsp Template BSP
+ *  @brief Driver for external component.
+ *  @{
  *
+ * @section genDesc General Description
+ * 
  * This file is the template for developing a new Board Support Package (BSP)
  * driver. It abstracts an external component (sensor, display, actuator, etc.)
  * connected to the board, using the HAL layer for hardware access.
  *
- * @note Hardware connection:
+ * @section Hardware_connection Hardware connection:
  *
  * |    Component Pin   |   ESP32-C6 GPIO   |
  * |:------------------:|:-----------------:|
@@ -60,6 +63,9 @@ uint8_t TemplateBSPInit(void);
  * Follow the naming convention: ModuleNameAction()
  * Examples: SensorRead(), DisplayWrite(), ButtonIsPressed()
  */
+
+/** @} */
+/** @} */
 
 #endif /* #ifndef TEMPLATE_BSP_H */
 

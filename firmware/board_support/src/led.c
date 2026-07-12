@@ -1,7 +1,7 @@
 /**
  * @file led.c
  * @author Albano Peñalva (albano.penalva@uner.edu.ar)
- * @brief 
+ * @brief Implementación del driver de LEDs para la placa de desarrollo.
  * @version 0.1
  * @date 2023-10-20
  * 
@@ -11,11 +11,9 @@
 
 /*==================[inclusions]=============================================*/
 #include "led.h"
-#include "gpio_hal.h"
+#include "board_config.h"
 /*==================[macros and definitions]=================================*/
-#define GPIO_LED1 GPIO_4
-#define GPIO_LED2 GPIO_5
-#define GPIO_LED3 GPIO_6
+
 /*==================[internal data declaration]==============================*/
 
 /*==================[internal functions declaration]=========================*/

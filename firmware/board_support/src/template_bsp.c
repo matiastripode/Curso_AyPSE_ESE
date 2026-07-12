@@ -11,19 +11,17 @@
 
 /*==================[inclusions]=============================================*/
 #include "template_bsp.h"
-/* TODO: Include the HAL headers needed to access hardware resources.
- * BSP drivers must only use HAL functions, never ESP-IDF APIs directly.
+/* TODO: Include board_config.h and any HAL headers needed to access hardware resources.
+ * BSP drivers must only use HAL/Board functions, never ESP-IDF APIs directly.
  * Examples:
+ *   #include "board_config.h"
  *   #include "gpio_hal.h"
- *   #include "uart_hal.h"
- *   #include "spi_hal.h"
  */
 /*==================[macros and definitions]=================================*/
-/* TODO: Define the GPIO pins or peripheral instances used by this component.
- * Map the component's physical pins to HAL identifiers here.
+/* TODO: Map the physical pins defined in board_config.h to local names if needed.
  * Example:
- *   #define SENSOR_GPIO_DATA    GPIO_3
- *   #define SENSOR_GPIO_ENABLE  GPIO_4
+ *   #define SENSOR_GPIO_DATA    GPIO_SENSOR_DATA   // Defined in board_config.h
+ *   #define SENSOR_GPIO_ENABLE  GPIO_SENSOR_ENABLE // Defined in board_config.h
  */
 
 /*==================[internal data declaration]==============================*/

@@ -4,6 +4,9 @@
             "path": "./apps/0_blinking"
         },
         {
+            "path": "./test_app"
+        },
+        {
             "path": "./apps/x_template"
         },
         {
@@ -22,7 +25,7 @@
     "settings": {
         "idf.portWin": "COM14",
         "idf.flashBaudRate": "115200",
-        "idf.flashType": "JTAG",
+        "idf.flashType": "UART",
         "cmake.configureOnOpen": false,
         "idf.svdFilePath": "${workspaceFolder}/../../esp32c6.svd",
         "idf.openOcdConfigs": [
