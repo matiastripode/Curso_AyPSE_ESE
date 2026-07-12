@@ -63,6 +63,7 @@ typedef enum {
  */
 i2c_hal_error_t I2CHalInit(i2c_hal_controller_t controller, uint8_t device_address, uint32_t freq, gpio_t sda, gpio_t scl);
 
+i2c_hal_error_t I2CHalDeinit(void);
 /**
  * @brief TODO: Add the remaining public functions of this driver.
  *
@@ -88,14 +89,14 @@ i2c_hal_error_t I2CHalRead(i2c_hal_controller_t controller, uint8_t dev_addr,
  * Follow the naming convention: ModuleNameAction()
  * Examples: UartHalWrite(), AdcHalRead(), TimerHalStart()
  */
-void HalDelayUs(uint32_t us);
+void I2CHalDelayUs(uint32_t us);
 /**
  * @brief TODO: Add the remaining public functions of this driver.
  *
  * Follow the naming convention: ModuleNameAction()
  * Examples: UartHalWrite(), AdcHalRead(), TimerHalStart()
  */
-void HalDelayMs(uint32_t ms);
+void I2CHalDelayMs(uint32_t ms);
 
 
 

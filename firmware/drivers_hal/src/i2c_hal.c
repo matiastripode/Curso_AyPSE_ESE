@@ -51,6 +51,18 @@ static i2c_handle_t i2c_handler;
 /*==================[external data definition]===============================*/
 
 /*==================[internal functions definition]==========================*/
+static i2c_hal_error_t I2CHalMapError(esp_err_t err) {
+    switch (err) {
+        case ESP_OK:
+            return I2C_OK;
+        case ESP_ERR_INVALID_ARG:
+            return I2C_ERR_INVALID_ARG;
+        case ESP_ERR_INVALID_STATE:
+            return I2C_ERR_INVALID_STATE;
+        default:
+            return I2C_FAIL;
+    }
+}
 
 /*==================[external functions definition]==========================*/
 
@@ -107,7 +119,7 @@ i2c_hal_error_t I2CHalInit(i2c_hal_controller_t controller, uint8_t device_addre
 		i2c_handler.i2c_bus_handle = bus_handle;
     } else {
         ESP_LOGE("I2C", "Failed to initialize master bus. Error: %s", esp_err_to_name(ret));
-		return ret;
+		return I2CHalMapError(ret);
     }
 
 	i2c_device_config_t dev_cfg = {
@@ -126,7 +138,26 @@ i2c_hal_error_t I2CHalInit(i2c_hal_controller_t controller, uint8_t device_addre
     } else {
         ESP_LOGE("I2C", "Failed to initialize I2C device. Error: %s", esp_err_to_name(ret));
     }
-	return ret;
+	return I2CHalMapError(ret);
+}
+
+i2c_hal_error_t I2CHalDeinit(void) {
+	if (i2c_handler.initialized == false) {
+			ESP_LOGE("I2C", "Won't deinit a non-initialized bus");
+			return I2C_ERR_INVALID_STATE;
+	}
+	esp_err_t ret = i2c_master_bus_rm_device(i2c_handler.dev_handle);
+	if (ret != ESP_OK) {
+			ESP_LOGE("I2C", "Failed to remove I2C device. Error: %s", esp_err_to_name(ret));
+			return I2CHalMapError(ret);
+	}
+	ret = i2c_del_master_bus(i2c_handler.i2c_bus_handle);
+	if (ret == ESP_OK) {
+			i2c_handler = (i2c_handle_t){0};
+	} else {
+			ESP_LOGE("I2C", "Failed to delete I2C master bus. Error: %s", esp_err_to_name(ret));
+	}
+	return I2CHalMapError(ret);
 }
 
 i2c_hal_error_t I2CHalWrite(i2c_hal_controller_t controller, uint8_t dev_addr,
@@ -148,7 +179,7 @@ i2c_hal_error_t I2CHalRead(i2c_hal_controller_t controller, uint8_t dev_addr,
 		ESP_LOGE("I2C", "Error: Invalid arguments.");
 		return I2C_ERR_INVALID_ARG;
 	}
-	uint8_t timeout_ms = 100;
+	uint32_t timeout_ms = 100;
 	esp_err_t ret =  i2c_master_transmit_receive(
       i2c_handler.dev_handle,
       &reg_addr,  // pointer to register-address byte
@@ -161,14 +192,14 @@ i2c_hal_error_t I2CHalRead(i2c_hal_controller_t controller, uint8_t dev_addr,
 	if (ret != ESP_OK) {
  		ESP_LOGE("I2C", "Failed to read from I2C device. Error: %s", esp_err_to_name(ret));
 	}
-	return ret;
+	return I2CHalMapError(ret);
 }
 
-void HalDelayUs(uint32_t us) {
+void I2CHalDelayUs(uint32_t us) {
 
 }
 
-void HalDelayMs(uint32_t ms) {
+void I2CHalDelayMs(uint32_t ms) {
 
 }
 
