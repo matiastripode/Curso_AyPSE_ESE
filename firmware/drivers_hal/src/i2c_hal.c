@@ -91,6 +91,7 @@ i2c_hal_error_t I2CHalInit(i2c_hal_controller_t controller, uint8_t device_addre
 	// already initialized with identical configuration
 	if (i2c_handler.initialized == true && 
 		i2c_handler.dev_cfg.scl_speed_hz == freq &&
+		i2c_handler.dev_cfg.device_address == device_address &&
 		i2c_handler.i2c_master_config.i2c_port == controller && 
 		i2c_handler.i2c_master_config.scl_io_num == scl_gpio && 
 		i2c_handler.i2c_master_config.sda_io_num == sda_gpio) {
@@ -161,12 +162,42 @@ i2c_hal_error_t I2CHalDeinit(void) {
 }
 
 i2c_hal_error_t I2CHalWrite(i2c_hal_controller_t controller, uint8_t dev_addr,
-                    uint8_t reg_addr, const uint8_t *data, size_t len) {
+                    uint8_t reg_addr, const uint8_t *data, size_t len, uint32_t timeout_ms) {
 	if (i2c_handler.initialized == false || i2c_handler.i2c_master_config.i2c_port != controller) {
 		ESP_LOGE("I2C", "Error: Trying to write into a not initilized controller.");
 		return I2C_ERR_INVALID_STATE;
 	}
-	return -1;
+
+	if (i2c_handler.dev_cfg.device_address != dev_addr|| dev_addr > 0x7F || len <= 0) {
+		ESP_LOGE("I2C", "Error: Invalid arguments.");
+		return I2C_ERR_INVALID_ARG;
+	}
+
+	if (data == NULL || len == 0) {
+		ESP_LOGE("I2C", "Error: Invalid arguments.");
+		return I2C_ERR_INVALID_ARG;
+	}
+	i2c_master_transmit_multi_buffer_info_t reg_addr_buffer = {
+		.write_buffer = &reg_addr,
+		.buffer_size = 1
+	};
+
+	i2c_master_transmit_multi_buffer_info_t data_wr_buffer = {
+		.write_buffer = data,
+		.buffer_size = len
+	};
+
+	i2c_master_transmit_multi_buffer_info_t buffer_info_array[] = { reg_addr_buffer, data_wr_buffer };
+	esp_err_t ret =  i2c_master_multi_buffer_transmit(
+		i2c_handler.dev_handle, 
+		buffer_info_array, 
+		2, 
+		timeout_ms);
+
+	if (ret != ESP_OK) {
+ 		ESP_LOGE("I2C", "Failed to write into I2C device. Error: %s", esp_err_to_name(ret));
+	}
+	return I2CHalMapError(ret);
 }
 
 i2c_hal_error_t I2CHalRead(i2c_hal_controller_t controller, uint8_t dev_addr,

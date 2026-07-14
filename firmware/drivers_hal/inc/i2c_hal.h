@@ -72,7 +72,7 @@ i2c_hal_error_t I2CHalDeinit(void);
  */
 
  i2c_hal_error_t I2CHalWrite(i2c_hal_controller_t controller, uint8_t dev_addr,
-                    uint8_t reg_addr, const uint8_t *data, size_t len);
+                    uint8_t reg_addr, const uint8_t *data, size_t len, uint32_t timeout_ms);
 
                     /**
  * @brief TODO: Add the remaining public functions of this driver.
