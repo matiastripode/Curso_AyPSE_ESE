@@ -1,7 +1,7 @@
 idf_build_get_property(target IDF_TARGET)
 
 # Always compiled source files
-set(srcs "src/gpio_hal.c" "src/i2c_hal.c"
+set(srcs "src/gpio_hal.c" "src/i2c_hal.c" "src/hal_delay.c"
     )
 
 # Always included headers

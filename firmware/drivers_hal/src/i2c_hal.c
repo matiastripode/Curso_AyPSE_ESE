@@ -226,12 +226,4 @@ i2c_hal_error_t I2CHalRead(i2c_hal_controller_t controller, uint8_t dev_addr,
 	return I2CHalMapError(ret);
 }
 
-void I2CHalDelayUs(uint32_t us) {
-
-}
-
-void I2CHalDelayMs(uint32_t ms) {
-
-}
-
 /*==================[end of file]============================================*/

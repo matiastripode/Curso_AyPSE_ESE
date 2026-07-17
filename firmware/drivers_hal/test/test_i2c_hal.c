@@ -1,5 +1,6 @@
 #include "unity.h"
 #include "i2c_hal.h"
+#include "hal_delay.h"
 
 TEST_CASE("I2CHalInit configures I2C without error", "[drivers_hal][i2c]")
 {
@@ -64,7 +65,7 @@ TEST_CASE("I2CHalWrite resets BMI270 and device responds", "[drivers_hal][i2c]")
                         100);
     TEST_ASSERT_EQUAL(I2C_OK, result);
 
-    I2CHalDelayMs(3);
+    HalDelayUs(3000);
 
     result = I2CHalRead(I2C_HAL_CONTROLLER_0,
                         bmi270_address,
