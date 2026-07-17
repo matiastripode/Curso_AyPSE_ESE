@@ -1,18 +1,16 @@
 /**
  * @file i2c_hal.c
  * @author Matias Tripode
- * @brief HAL driver template for ESP32-C6.
+ * @brief Implementación de la HAL maestra I2C para ESP32-C6.
  * @version 0.1
- * @date AAAA-MM-DD
- *
- * @copyright Copyright (c) AAAA
- *
+ * @date 2026-07-16
  */
 
 /*==================[inclusions]=============================================*/
 #include "i2c_hal.h"
 #include "driver/i2c_master.h"
 #include "esp_log.h"
+#include <stdbool.h>
 #include <stdint.h>
 /* TODO: Include the specific ESP-IDF driver header for this peripheral.
  * This is the ONLY place in the project where ESP-IDF low-level headers
@@ -168,12 +166,8 @@ i2c_hal_error_t I2CHalWrite(i2c_hal_controller_t controller, uint8_t dev_addr,
 		return I2C_ERR_INVALID_STATE;
 	}
 
-	if (i2c_handler.dev_cfg.device_address != dev_addr|| dev_addr > 0x7F || len <= 0) {
-		ESP_LOGE("I2C", "Error: Invalid arguments.");
-		return I2C_ERR_INVALID_ARG;
-	}
-
-	if (data == NULL || len == 0) {
+	if (i2c_handler.dev_cfg.device_address != dev_addr ||
+		dev_addr > 0x7F || data == NULL || len == 0) {
 		ESP_LOGE("I2C", "Error: Invalid arguments.");
 		return I2C_ERR_INVALID_ARG;
 	}
@@ -206,7 +200,8 @@ i2c_hal_error_t I2CHalRead(i2c_hal_controller_t controller, uint8_t dev_addr,
 		ESP_LOGE("I2C", "Error: Trying to read from a not initilized controller.");
 		return I2C_ERR_INVALID_STATE;
 	}
-	if (i2c_handler.dev_cfg.device_address != dev_addr|| dev_addr > 0x7F || len <= 0) {
+	if (i2c_handler.dev_cfg.device_address != dev_addr ||
+		dev_addr > 0x7F || data == NULL || len == 0) {
 		ESP_LOGE("I2C", "Error: Invalid arguments.");
 		return I2C_ERR_INVALID_ARG;
 	}

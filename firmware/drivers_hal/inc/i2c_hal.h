@@ -1,105 +1,134 @@
 #ifndef I2C_HAL_H
 #define I2C_HAL_H
 
-/** @defgroup hal HAL
- *  @brief Hardware Abstraction Layer.
- *  @{
- *  @defgroup template_hal Template HAL
- *  @brief Template driver for ESP32-C6.
- *  @{
+/**
+ * @file i2c_hal.h
+ * @brief Interfaz de abstracción para el controlador maestro I2C.
  *
- * @section genDesc General Description
- * 
- * This file is the template for developing a new Hardware Abstraction Layer (HAL)
- * driver. It wraps the low-level ESP-IDF peripheral API and exposes it through
- * a hardware-independent interface.
+ * Este módulo abstrae la configuración del bus y las transferencias por
+ * registros de un dispositivo I2C. La implementación actual admite un único
+ * controlador y un único dispositivo asociado a ese controlador.
  *
  * @author Matias Tripode
- *
- * @section changelog
- *
- * |   Date     | Description                                            |
- * |:----------:|:-------------------------------------------------------|
- * | DD/MM/AAAA | Document creation                                      |
- *
- **/
+ * @ingroup hal
+ */
 
-/*==================[inclusions]=============================================*/
-#include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
-#include <gpio_hal.h>
 
-/*==================[macros]=================================================*/
+#include "gpio_hal.h"
 
-/*==================[typedef]================================================*/
 /**
- * @brief TODO: Define the data types needed for this HAL driver.
+ * @defgroup i2c_hal I2C HAL
+ * @brief Abstracción de acceso al bus I2C en modo maestro.
+ * @ingroup hal
+ * @{
+ */
+
+/**
+ * @brief Resultados devueltos por la HAL de I2C.
  *
- * Examples:
- *   - An enum of available peripheral instances (channels, ports, interfaces).
- *   - A configuration struct passed to the Init function.
+ * Estos valores son propios de la HAL y no deben interpretarse como valores
+ * de tipo `esp_err_t`.
  */
 typedef enum {
-    I2C_OK         = 0,       /*!< esp_err_t value indicating success (no error) */
-    I2C_FAIL       = -1,      /*!< Generic esp_err_t code indicating failure */
-    I2C_ERR_INVALID_ARG         = -2,   /*!< Invalid argument */
-    I2C_ERR_INVALID_STATE       = -3   /*!< Invalid state */
+    I2C_OK = 0,                /**< Operación completada correctamente. */
+    I2C_FAIL = -1,             /**< Error de comunicación o error interno no clasificado. */
+    I2C_ERR_INVALID_ARG = -2,  /**< Uno o más argumentos son inválidos. */
+    I2C_ERR_INVALID_STATE = -3 /**< El controlador no está en el estado requerido. */
 } i2c_hal_error_t;
 
+/**
+ * @brief Controladores I2C disponibles en la HAL.
+ */
 typedef enum {
-    I2C_HAL_CONTROLLER_0 = 0,
-    I2C_HAL_CONTROLLER_COUNT = 1,
+    I2C_HAL_CONTROLLER_0 = 0, /**< Controlador I2C principal. */
+    I2C_HAL_CONTROLLER_COUNT  /**< Cantidad de controladores disponibles; no es un controlador válido. */
 } i2c_hal_controller_t;
 
-/*==================[external data declaration]==============================*/
-
-/*==================[external functions declaration]=========================*/
 /**
- * @brief Initialize the peripheral.
+ * @brief Inicializa el controlador y registra un dispositivo I2C.
  *
- * TODO: Describe what this function configures (clock, GPIO muxing, mode, etc.)
+ * Configura el bus en modo maestro y crea el dispositivo identificado por su
+ * dirección de 7 bits. Una segunda llamada con la misma configuración es
+ * idempotente. Si el controlador ya fue inicializado con otros parámetros, la
+ * función rechaza la nueva configuración.
  *
- * @return uint8_t true if initialization was successful, false otherwise.
+ * @param[in] controller Controlador I2C que se desea inicializar.
+ * @param[in] device_address Dirección I2C de 7 bits del dispositivo.
+ * @param[in] freq Frecuencia del reloj del dispositivo, expresada en hertz.
+ * @param[in] sda GPIO utilizado para la señal de datos SDA.
+ * @param[in] scl GPIO utilizado para la señal de reloj SCL.
+ *
+ * @retval I2C_OK El controlador quedó inicializado o ya tenía la misma configuración.
+ * @retval I2C_ERR_INVALID_ARG El controlador o alguno de los parámetros es inválido.
+ * @retval I2C_ERR_INVALID_STATE El controlador ya posee otra configuración.
+ * @retval I2C_FAIL El driver subyacente no pudo crear el bus o el dispositivo.
  */
-i2c_hal_error_t I2CHalInit(i2c_hal_controller_t controller, uint8_t device_address, uint32_t freq, gpio_t sda, gpio_t scl);
+i2c_hal_error_t I2CHalInit(i2c_hal_controller_t controller,
+                           uint8_t device_address,
+                           uint32_t freq,
+                           gpio_t sda,
+                           gpio_t scl);
 
+/**
+ * @brief Libera el dispositivo y el bus I2C inicializados.
+ *
+ * @retval I2C_OK El dispositivo y el bus fueron liberados correctamente.
+ * @retval I2C_ERR_INVALID_STATE La HAL no se encontraba inicializada.
+ * @retval I2C_FAIL El driver subyacente no pudo liberar alguno de los recursos.
+ */
 i2c_hal_error_t I2CHalDeinit(void);
+
 /**
- * @brief TODO: Add the remaining public functions of this driver.
+ * @brief Escribe uno o más bytes a partir de un registro del dispositivo.
  *
- * Follow the naming convention: ModuleNameAction()
- * Examples: UartHalWrite(), AdcHalRead(), TimerHalStart()
- */
-
- i2c_hal_error_t I2CHalWrite(i2c_hal_controller_t controller, uint8_t dev_addr,
-                    uint8_t reg_addr, const uint8_t *data, size_t len, uint32_t timeout_ms);
-
-                    /**
- * @brief TODO: Add the remaining public functions of this driver.
+ * La dirección del registro y los datos se transmiten dentro de una misma
+ * transacción I2C, sin copiar el contenido del buffer de entrada.
  *
- * Follow the naming convention: ModuleNameAction()
- * Examples: UartHalWrite(), AdcHalRead(), TimerHalStart()
- */
-i2c_hal_error_t I2CHalRead(i2c_hal_controller_t controller, uint8_t dev_addr,
-                   uint8_t reg_addr, uint8_t *data, size_t len);
-
-                   /**
- * @brief TODO: Add the remaining public functions of this driver.
+ * @param[in] controller Controlador I2C previamente inicializado.
+ * @param[in] dev_addr Dirección I2C de 7 bits registrada durante la inicialización.
+ * @param[in] reg_addr Dirección del primer registro que se desea escribir.
+ * @param[in] data Puntero al buffer con los bytes que se transmitirán.
+ * @param[in] len Cantidad de bytes contenidos en @p data; debe ser mayor que cero.
+ * @param[in] timeout_ms Tiempo máximo de espera de la transferencia, en milisegundos.
  *
- * Follow the naming convention: ModuleNameAction()
- * Examples: UartHalWrite(), AdcHalRead(), TimerHalStart()
+ * @retval I2C_OK Escritura completada correctamente.
+ * @retval I2C_ERR_INVALID_ARG Dirección, buffer o longitud inválidos.
+ * @retval I2C_ERR_INVALID_STATE El controlador no está inicializado o no coincide.
+ * @retval I2C_FAIL El dispositivo no respondió, expiró el timeout u ocurrió otro error de bus.
  */
-void I2CHalDelayUs(uint32_t us);
+i2c_hal_error_t I2CHalWrite(i2c_hal_controller_t controller,
+                            uint8_t dev_addr,
+                            uint8_t reg_addr,
+                            const uint8_t *data,
+                            size_t len,
+                            uint32_t timeout_ms);
+
 /**
- * @brief TODO: Add the remaining public functions of this driver.
+ * @brief Lee uno o más bytes a partir de un registro del dispositivo.
  *
- * Follow the naming convention: ModuleNameAction()
- * Examples: UartHalWrite(), AdcHalRead(), TimerHalStart()
+ * La operación transmite primero la dirección del registro y luego realiza
+ * la lectura mediante una transacción combinada con repeated-start. La
+ * implementación actual utiliza un timeout interno de 100 ms.
+ *
+ * @param[in] controller Controlador I2C previamente inicializado.
+ * @param[in] dev_addr Dirección I2C de 7 bits registrada durante la inicialización.
+ * @param[in] reg_addr Dirección del primer registro que se desea leer.
+ * @param[out] data Buffer donde se almacenarán los bytes recibidos.
+ * @param[in] len Cantidad de bytes que se desea recibir; debe ser mayor que cero.
+ *
+ * @retval I2C_OK Lectura completada correctamente.
+ * @retval I2C_ERR_INVALID_ARG Dirección, buffer o longitud inválidos.
+ * @retval I2C_ERR_INVALID_STATE El controlador no está inicializado o no coincide.
+ * @retval I2C_FAIL El dispositivo no respondió, expiró el timeout u ocurrió otro error de bus.
  */
-void I2CHalDelayMs(uint32_t ms);
+i2c_hal_error_t I2CHalRead(i2c_hal_controller_t controller,
+                           uint8_t dev_addr,
+                           uint8_t reg_addr,
+                           uint8_t *data,
+                           size_t len);
 
+/** @} */
 
-
-#endif /* #ifndef I2C_HAL_H */
-
-/*==================[end of file]============================================*/
+#endif /* I2C_HAL_H */

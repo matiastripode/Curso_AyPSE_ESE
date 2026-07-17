@@ -1,17 +1,11 @@
 /**
- * @file template_hal.c
- * @author Nombre Apellido
- * @brief HAL driver template for ESP32-C6.
- * @version 0.1
- * @date AAAA-MM-DD
- *
- * @copyright Copyright (c) AAAA
- *
+ * @file hal_delay.c
+ * @brief Implementación de retardos breves para ESP32-C6.
+ * @author Matias Tripode
  */
 
 /*==================[inclusions]=============================================*/
 #include "hal_delay.h"
-#include "esp_log.h"
 #include "esp_rom_sys.h"
 /* TODO: Include the specific ESP-IDF driver header for this peripheral.
  * This is the ONLY place in the project where ESP-IDF low-level headers
@@ -48,10 +42,6 @@ void HalDelayUs(uint32_t us) {
         return;
     }
     esp_rom_delay_us(us);
-}
-
-void HalDelayMs(uint32_t ms) {
-    ESP_LOGE("Delay MS", "Not implemented yet");
 }
 
 /*==================[end of file]============================================*/

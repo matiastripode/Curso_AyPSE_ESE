@@ -1,71 +1,38 @@
 #ifndef HAL_DELAY_H
 #define HAL_DELAY_H
 
-/** @defgroup hal HAL
- *  @brief Hardware Abstraction Layer.
- *  @{
- *  @defgroup template_hal Template HAL
- *  @brief Template driver for ESP32-C6.
- *  @{
+/**
+ * @file hal_delay.h
+ * @brief Interfaz de abstracción para retardos breves de hardware.
  *
- * @section genDesc General Description
- * 
- * This file is the template for developing a new Hardware Abstraction Layer (HAL)
- * driver. It wraps the low-level ESP-IDF peripheral API and exposes it through
- * a hardware-independent interface.
- *
- * @author Nombre Apellido
- *
- * @section changelog
- *
- * |   Date     | Description                                            |
- * |:----------:|:-------------------------------------------------------|
- * | DD/MM/AAAA | Document creation                                      |
- *
- **/
+ * @author Matias Tripode
+ * @ingroup hal
+ */
 
-/*==================[inclusions]=============================================*/
-#include <stdbool.h>
 #include <stdint.h>
-/*==================[macros]=================================================*/
 
-/*==================[typedef]================================================*/
 /**
- * @brief TODO: Define the data types needed for this HAL driver.
- *
- * Examples:
- *   - An enum of available peripheral instances (channels, ports, interfaces).
- *   - A configuration struct passed to the Init function.
+ * @defgroup hal_delay Delay HAL
+ * @brief Retardos bloqueantes independientes de un periférico particular.
+ * @ingroup hal
+ * @{
  */
 
-/*==================[external data declaration]==============================*/
-
-/*==================[external functions declaration]=========================*/
 /**
- * @brief Initialize the peripheral.
+ * @brief Realiza una espera activa expresada en microsegundos.
  *
- * TODO: Describe what this function configures (clock, GPIO muxing, mode, etc.)
+ * La función bloquea la CPU durante el intervalo solicitado y puede demorar
+ * algo más que @p us. Está destinada a esperas breves exigidas por el hardware,
+ * por ejemplo durante la inicialización o el reinicio de un sensor. Para
+ * esperas prolongadas debe utilizarse un mecanismo de temporización del RTOS.
  *
- * @return uint8_t true if initialization was successful, false otherwise.
+ * @param[in] us Duración mínima solicitada, en microsegundos. El valor cero no
+ * produce espera.
+ *
+ * @note Esta función realiza busy-wait y no cede la CPU a otras tareas.
  */
-// precise busy-wait
-// large values block the CPU and should be avoided
 void HalDelayUs(uint32_t us);
 
-// cooperative FreeRTOS task delay
-// must be called from task context, not an ISR.
-void HalDelayMs(uint32_t ms);
-
-/**
- * @brief TODO: Add the remaining public functions of this driver.
- *
- * Follow the naming convention: ModuleNameAction()
- * Examples: UartHalWrite(), AdcHalRead(), TimerHalStart()
- */
-
-/** @} */
 /** @} */
 
-#endif /* #ifndef HAL_DELAY_H */
-
-/*==================[end of file]============================================*/
+#endif /* HAL_DELAY_H */
