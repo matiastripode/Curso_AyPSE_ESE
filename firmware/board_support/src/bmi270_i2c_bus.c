@@ -9,6 +9,7 @@
 
 #include "bmi270_i2c_bus.h"
 #include "hal_delay.h"
+#include "board_config.h"
 #include <stdio.h>
 
 /** Tiempo máximo de una escritura I2C, expresado en milisegundos. */
@@ -102,7 +103,13 @@ bmi270_bus_error_t BMI270I2CBusCreate(bmi270_bus_t *bus,
         return  BMI270_BUS_ERR_INVALID_ARG;
     }
 
-    i2c_hal_error_t result = I2CHalInit(context->controller, context->dev_addr, 400000, GPIO_20, GPIO_21);
+    i2c_hal_error_t result = I2CHalInit(
+        context->controller, 
+        context->dev_addr, 
+        BMI270_I2C_FREQUENCY_HZ, 
+        GPIO_BMI270_SDA, 
+        GPIO_BMI270_SCL
+    );
     if (result != I2C_OK) {
         printf("BMI270-I2C-BUS: Failed to initialize I2C hal.\n");
         return I2CHalMapToBmi270Error(result);

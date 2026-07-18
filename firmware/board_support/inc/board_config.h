@@ -21,6 +21,13 @@
 #define GPIO_LED3   GPIO_6  /**< LED 3 (Red) */
 /** @} */
 
+  /** @name Configuración I2C del BMI270
+   * @{
+   */
+  #define GPIO_BMI270_SDA          GPIO_20  /**< Línea de datos I2C. */
+  #define GPIO_BMI270_SCL          GPIO_21  /**< Línea de reloj I2C. */
+  #define BMI270_I2C_FREQUENCY_HZ  400000U  /**< Frecuencia del bus: 400 kHz. */
+  /** @} */
 /*==================[typedef]================================================*/
 
 /*==================[external data declaration]==============================*/
