@@ -1,11 +1,15 @@
 #include "unity.h"
 #include "i2c_hal.h"
 #include "hal_delay.h"
+#include "test_helpers.h"
 
 TEST_CASE("I2CHalInit configures I2C without error", "[drivers_hal][i2c]")
 {
     uint8_t bmi270_address = 0x68;
     i2c_hal_error_t result = I2CHalInit(I2C_HAL_CONTROLLER_0, bmi270_address, 400000, GPIO_20, GPIO_21);
+    if (result == I2C_OK) {
+        TestMarkI2CBusAcquired();
+    }
     TEST_ASSERT_TRUE(result == I2C_OK);
 }
 
@@ -14,6 +18,9 @@ TEST_CASE("I2CHalInit is idempotent with same params", "[drivers_hal][i2c]")
 {
     uint8_t bmi270_address = 0x68;
     i2c_hal_error_t result = I2CHalInit(I2C_HAL_CONTROLLER_0, bmi270_address, 400000, GPIO_20, GPIO_21);
+    if (result == I2C_OK) {
+        TestMarkI2CBusAcquired();
+    }
     TEST_ASSERT_TRUE(result == I2C_OK);
     result = I2CHalInit(I2C_HAL_CONTROLLER_0, bmi270_address, 400000, GPIO_20, GPIO_21);
     TEST_ASSERT_TRUE(result == I2C_OK);
@@ -29,9 +36,13 @@ TEST_CASE("I2CHalInit should fail with CLK == SDA", "[drivers_hal][i2c]")
 TEST_CASE("I2CHalRead read from I2C without error", "[drivers_hal][i2c]")
 {
     uint8_t bmi270_address = 0x68;
-    I2CHalInit(I2C_HAL_CONTROLLER_0, bmi270_address, 400000, GPIO_20, GPIO_21);
+    i2c_hal_error_t result = I2CHalInit(I2C_HAL_CONTROLLER_0, bmi270_address, 400000, GPIO_20, GPIO_21);
+    if (result == I2C_OK) {
+        TestMarkI2CBusAcquired();
+    }
+    TEST_ASSERT_EQUAL(I2C_OK, result);
     uint8_t chip_id;
-    i2c_hal_error_t result = I2CHalRead(I2C_HAL_CONTROLLER_0, bmi270_address, 0x00,  &chip_id, 1);
+    result = I2CHalRead(I2C_HAL_CONTROLLER_0, bmi270_address, 0x00,  &chip_id, 1);
     TEST_ASSERT_TRUE(result == I2C_OK);
     TEST_ASSERT_TRUE(chip_id ==  0x24);
 }
@@ -55,6 +66,9 @@ TEST_CASE("I2CHalWrite resets BMI270 and device responds", "[drivers_hal][i2c]")
                     400000,
                     GPIO_20,
                     GPIO_21);
+    if (result == I2C_OK) {
+        TestMarkI2CBusAcquired();
+    }
     TEST_ASSERT_EQUAL(I2C_OK, result);
     
     result = I2CHalWrite(I2C_HAL_CONTROLLER_0,
@@ -75,5 +89,4 @@ TEST_CASE("I2CHalWrite resets BMI270 and device responds", "[drivers_hal][i2c]")
     TEST_ASSERT_EQUAL(I2C_OK, result);
     TEST_ASSERT_EQUAL_HEX8(0x24, chip_id);
 }
-
 

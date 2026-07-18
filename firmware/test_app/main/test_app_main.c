@@ -1,9 +1,31 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include "unity.h"
 #include "esp_err.h"
 #include "esp_task_wdt.h"
+#include "i2c_hal.h"
+#include "test_helpers.h"
 #include "unity_test_runner.h"
+
+static bool i2c_bus_acquired;
+
+void TestMarkI2CBusAcquired(void)
+{
+    i2c_bus_acquired = true;
+}
+
+void setUp(void)
+{
+}
+
+void tearDown(void)
+{
+    if (i2c_bus_acquired) {
+        (void)I2CHalDeinit();
+        i2c_bus_acquired = false;
+    }
+}
 
 void app_main(void)
 { 

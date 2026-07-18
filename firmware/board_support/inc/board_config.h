@@ -27,6 +27,7 @@
   #define GPIO_BMI270_SDA          GPIO_20  /**< Línea de datos I2C. */
   #define GPIO_BMI270_SCL          GPIO_21  /**< Línea de reloj I2C. */
   #define BMI270_I2C_FREQUENCY_HZ  400000U  /**< Frecuencia del bus: 400 kHz. */
+  #define BMI270_CHIP_ID 0x24  /**< Chip ID correspondiente al sensor BMI270. */
   /** @} */
 /*==================[typedef]================================================*/
 

@@ -17,6 +17,17 @@
 #include "bmi270_bus.h"
 
 /**
+ * @brief Resultados devueltos por las implementaciones del bus BMI270.
+ */
+typedef enum {
+    BMI270_OK = 0,                /**< Operación completada correctamente. */
+    BMI270_FAIL = -1,             /**< Error de comunicación o error no clasificado. */
+    BMI270_ERR_INVALID_ARG = -2,  /**< Uno o más argumentos son inválidos. */
+    BMI270_ERR_INVALID_STATE = -3 /**< El transporte no está en el estado requerido. */
+} bmi270_error_t;
+
+
+/**
  * @defgroup bmi270_bsp Driver BMI270
  * @brief Driver BSP independiente del transporte para el sensor BMI270.
  * @ingroup bsp
@@ -39,7 +50,7 @@
  * @warning La secuencia de inicialización del sensor todavía se encuentra en
  * desarrollo y esta API no debe considerarse funcional en el estado actual.
  */
-uint8_t BMI270Init(const bmi270_bus_t *bus);
+bmi270_error_t BMI270Init(const bmi270_bus_t *bus);
 
 /** @} */
 

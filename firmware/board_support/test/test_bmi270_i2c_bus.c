@@ -1,14 +1,8 @@
 #include "unity.h"
 #include "bmi270_i2c_bus.h"
+#include "test_helpers.h"
 
 
-// TEST_SETUP()
-// {
-// }
-
-// TEST_TEAR_DOWN()
-// {
-// }
 /*
  Test case:
   1. Inicializar la HAL con 0x68, 400 kHz, SDA GPIO20 y SCL GPIO21.
@@ -31,6 +25,9 @@ TEST_CASE("BMI270I2CBus read without error", "[board_support][bmi270_i2c_bus]")
     uint8_t chip_id = 0;
 
     bmi270_bus_error_t result = BMI270I2CBusCreate(&bus, &context);
+    if (result == BMI270_BUS_OK) {
+        TestMarkI2CBusAcquired();
+    }
 
     TEST_ASSERT_NOT_NULL(bus.read);
     TEST_ASSERT_NOT_NULL(bus.write);
@@ -41,7 +38,6 @@ TEST_CASE("BMI270I2CBus read without error", "[board_support][bmi270_i2c_bus]")
 
     TEST_ASSERT_TRUE(result == BMI270_BUS_OK);
     TEST_ASSERT_TRUE(chip_id ==  0x24);
-    I2CHalDeinit();
 }
 
 
@@ -65,6 +61,9 @@ TEST_CASE("BMI270I2CBus write without error", "[board_support][bmi270_i2c_bus]")
     };    
 
     bmi270_bus_error_t result = BMI270I2CBusCreate(&bus, &context);
+    if (result == BMI270_BUS_OK) {
+        TestMarkI2CBusAcquired();
+    }
 
     TEST_ASSERT_NOT_NULL(bus.read);
     TEST_ASSERT_NOT_NULL(bus.write);
@@ -81,5 +80,4 @@ TEST_CASE("BMI270I2CBus write without error", "[board_support][bmi270_i2c_bus]")
 
     TEST_ASSERT_TRUE(result == BMI270_BUS_OK);
     TEST_ASSERT_TRUE(chip_id ==  0x24);
-    I2CHalDeinit();
 }
