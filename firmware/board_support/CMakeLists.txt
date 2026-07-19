@@ -1,7 +1,7 @@
 idf_build_get_property(target IDF_TARGET)
 
 # Always compiled source files
-set(srcs "src/led.c" "src/bmi270_i2c_bus.c" "src/bmi270.c"
+set(srcs "src/led.c" "src/bmi270_i2c_bus.c" "src/bmi270.c" "src/bmi270_config.c"
     )
 
 # Always included headers

@@ -6,6 +6,9 @@ list(APPEND EXTRA_COMPONENT_DIRS "../middleware")
 list(APPEND EXTRA_COMPONENT_DIRS "../board_support")
 list(APPEND EXTRA_COMPONENT_DIRS "../drivers_hal")
 
+# Compile the tests declared by these components under their test directories.
+set(TEST_COMPONENTS drivers_hal board_support)
+
 # Restrict compiled components to isolate the framework and test targets.
 set(COMPONENTS main middleware board_support drivers_hal)
 

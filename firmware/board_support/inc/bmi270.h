@@ -27,6 +27,12 @@ typedef enum {
 } bmi270_error_t;
 
 
+typedef struct {
+    int16_t x;
+    int16_t y;
+    int16_t z;
+} bmi270_vector_t;
+
 /**
  * @defgroup bmi270_bsp Driver BMI270
  * @brief Driver BSP independiente del transporte para el sensor BMI270.
@@ -53,5 +59,8 @@ typedef enum {
 bmi270_error_t BMI270Init(const bmi270_bus_t *bus);
 
 /** @} */
+
+
+bmi270_error_t BMI270AccelRead(bmi270_vector_t *accel);
 
 #endif /* BMI270_H */
