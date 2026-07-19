@@ -22,22 +22,19 @@
 #define INIT_DATA       0x5E
 #define DATA_8          0x0C
 #define INTERNAL_STATUS 0x21
+#define STATUS                   0x03U
+#define BMI270_STATUS_DRDY_ACC   (1U << 7)
 
 #define ACC_CONF        0x40
 #define ACC_RANGE       0x41
 #define PWR_CTRL        0x7D
 
-/* Seis bytes del acelerometro */
-#define X_LSB       0x0C
-#define X_MSB       0x0D
-#define Y_LSB       0x0E
-#define Y_MSB       0x0F
-#define Z_LSB       0x10
-#define Z_MSB       0x11
+
 
 #define INIT_LOAD_BLOCK 32U
 #define ADV_PWR_SAVE_DELAY_US  450U
 #define PROC_BLOB_TIME_US      150000U
+
 
 // Accelerometer configuration
 #define BMI270_ACC_ODR_100_HZ       0x08U /* 100 Hz */
@@ -265,6 +262,46 @@ static bmi270_error_t BMI270AccelConfig(const bmi270_bus_t *bus) {
 
     return BMI270_OK;
 }
+
+static bmi270_error_t BMI270AccelReadRaw(bmi270_vector_t *accel) {
+    uint8_t accel_data_raw[6];
+    if (accel == NULL) {
+        return BMI270_ERR_INVALID_ARG;
+    }
+	if (initialized == false || bmi270_bus_instance == NULL) {
+		return  BMI270_ERR_INVALID_STATE;
+	}
+
+    /* Leer los seis bytes del acelerometro */
+    bmi270_bus_error_t result = bmi270_bus_instance->read(
+        bmi270_bus_instance->context,
+        DATA_8,
+        accel_data_raw,
+        sizeof(accel_data_raw));
+    if (result != BMI270_BUS_OK) {
+        return BMI270_FAIL;
+    }
+
+    int16_t raw_x = (int16_t)(
+        (uint16_t)accel_data_raw[0] | (uint16_t)accel_data_raw[1] << 8
+    );
+
+    int16_t raw_y = (int16_t)(
+        (uint16_t)accel_data_raw[2] | (uint16_t)accel_data_raw[3] << 8
+    );
+    int16_t raw_z = (int16_t)(
+        (uint16_t)accel_data_raw[4] | (uint16_t)accel_data_raw[5] << 8
+    );
+    bmi270_vector_t temp_accel = {
+        .x = raw_x,
+        .y = raw_y,
+        .z = raw_z
+    };
+    *accel = temp_accel;
+
+	return  BMI270_OK;
+}
+
 /*==================[external functions definition]==========================*/
 
 /**
@@ -338,8 +375,8 @@ bmi270_error_t BMI270Init(const bmi270_bus_t *bus) {
 	return BMI270_OK;
 }
 
-bmi270_error_t BMI270AccelRead(bmi270_vector_t *accel) {
-    uint8_t accel_data_raw[6];
+bmi270_error_t BMI270AccelTryRead(bmi270_vector_t *accel) {
+    uint8_t status = 0;
     if (accel == NULL) {
         return BMI270_ERR_INVALID_ARG;
     }
@@ -347,33 +384,21 @@ bmi270_error_t BMI270AccelRead(bmi270_vector_t *accel) {
 		return  BMI270_ERR_INVALID_STATE;
 	}
 
-    /* Leer los seis bytes del acelerometro */
+    /* Leer status */
     bmi270_bus_error_t result = bmi270_bus_instance->read(
         bmi270_bus_instance->context,
-        DATA_8,
-        accel_data_raw,
-        sizeof(accel_data_raw));
+        STATUS,
+        &status,
+        sizeof(status));
     if (result != BMI270_BUS_OK) {
         return BMI270_FAIL;
     }
 
-    int16_t raw_x = (int16_t)(
-        (uint16_t)accel_data_raw[0] | (uint16_t)accel_data_raw[1] << 8
-    );
+    if ((status & BMI270_STATUS_DRDY_ACC) == 0U) {
+        return BMI270_NOT_READY;
+    }
 
-    int16_t raw_y = (int16_t)(
-        (uint16_t)accel_data_raw[2] | (uint16_t)accel_data_raw[3] << 8
-    );
-    int16_t raw_z = (int16_t)(
-        (uint16_t)accel_data_raw[4] | (uint16_t)accel_data_raw[5] << 8
-    );
-    bmi270_vector_t temp_accel = {
-        .x = raw_x,
-        .y = raw_y,
-        .z = raw_z
-    };
-    *accel = temp_accel;
-
-	return  BMI270_OK;
+    return BMI270AccelReadRaw(accel);
 }
+
 /*==================[end of file]============================================*/
