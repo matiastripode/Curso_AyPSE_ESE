@@ -1,12 +1,13 @@
 idf_build_get_property(target IDF_TARGET)
 
 # Always compiled source files
-set(srcs "src/animation.c"
+set(srcs "src/animation.c" "src/ble_imu.c" 
     )
 
 # Always included headers
 set(includes "inc")
 
+
 idf_component_register(SRCS ${srcs}
                        INCLUDE_DIRS ${includes}
-                       PRIV_REQUIRES board_support drivers_hal)
+                       PRIV_REQUIRES board_support drivers_hal bt)
