@@ -64,7 +64,7 @@ void GPIOInit(gpio_t pin, io_t io){
 	if(io == GPIO_INPUT){
 		gpio_list[pin].mode = GPIO_MODE_INPUT;
 	} else if(io == GPIO_OUTPUT){
-		gpio_list[pin].mode = GPIO_MODE_OUTPUT;
+		gpio_list[pin].mode = GPIO_MODE_INPUT_OUTPUT;
 	}
 	gpio_reset_pin(gpio_list[pin].pin);
 	gpio_set_direction(gpio_list[pin].pin, gpio_list[pin].mode);

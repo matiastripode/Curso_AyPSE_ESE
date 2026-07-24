@@ -26,8 +26,11 @@
 /*==================[inclusions]=============================================*/
 #include <stdio.h>
 #include <stdint.h>
+#include "sdkconfig.h"
 #include "nvs_flash.h"
+#if CONFIG_BT_NIMBLE_ENABLED
 #include "ble_imu.h"
+#endif
 #include "esp_log.h"
 
 /*==================[macros and definitions]=================================*/
@@ -45,10 +48,14 @@ void app_main(void){
     }
     ESP_ERROR_CHECK(ret);
 
+#if CONFIG_BT_NIMBLE_ENABLED
     ble_imu_error_t ble_result = BLEIMUInit();
 
     if (ble_result != BLE_IMU_OK) {
         ESP_LOGE(TAG,  "Main App Failed");
     }
+#else
+    ESP_LOGW(TAG, "NimBLE is disabled; BLE IMU was not initialized");
+#endif
 }
 /*==================[end of file]============================================*/
