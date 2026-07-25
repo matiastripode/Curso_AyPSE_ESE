@@ -27,6 +27,21 @@ static uint16_t accel_value_handle;
 static uint16_t connection_handle = BLE_HS_CONN_HANDLE_NONE;
 static bool notifications_enabled;
 static uint8_t own_address_type;
+
+static const ble_uuid128_t gatt_svr_svc_uuid =
+    BLE_UUID128_INIT(
+        0x00, 0x27, 0x9c, 0x1a,
+        0x6b, 0x5d, 0xe1, 0xa7,
+        0x76, 0x4b, 0x4a, 0xfc,
+        0x01, 0x00, 0x2f, 0x6d
+    );
+static const ble_uuid128_t gatt_svr_chr_uuid =
+    BLE_UUID128_INIT(
+        0x00, 0x27, 0x9c, 0x1a,
+        0x6b, 0x5d, 0xe1, 0xa7,
+        0x76, 0x4b, 0x4a, 0xfc,
+        0x02, 0x00, 0x2f, 0x6d
+    );
 /*==================[internal functions declaration]=========================*/
 // Callback function declarations
 static int gatt_svr_access_cb(uint16_t conn_handle, uint16_t attr_handle,
@@ -44,6 +59,8 @@ static void BLEIMUHostTask(void *pvParameters) {
 static int BLEIMUStartAdvertising(void) {
     struct ble_hs_adv_fields fields = {0};
     struct ble_gap_adv_params adv_params = {0};
+    struct ble_hs_adv_fields rsp_fields = {0};
+
     fields.flags = BLE_HS_ADV_F_DISC_GEN |
                     BLE_HS_ADV_F_BREDR_UNSUP;
     fields.tx_pwr_lvl_is_present = 1;
@@ -56,6 +73,16 @@ static int BLEIMUStartAdvertising(void) {
 
     if (rc != 0) {
         ESP_LOGE(TAG, "failed to set advertising fields; rc=%d", rc);
+        return rc;
+    }
+    //
+    rsp_fields.uuids128 = &gatt_svr_svc_uuid;
+    rsp_fields.num_uuids128 = 1;
+    rsp_fields.uuids128_is_complete = 1;
+
+    rc = ble_gap_adv_rsp_set_fields(&rsp_fields);
+    if (rc != 0) {
+        ESP_LOGE(TAG, "failed to set scan response; rc=%d", rc);
         return rc;
     }
     //
@@ -162,21 +189,6 @@ static int BLEIMUGapEvent(struct ble_gap_event *event, void *arg) {
     }
 }
 /*==================[internal data definition]===============================*/
-
-static const ble_uuid128_t gatt_svr_svc_uuid =
-    BLE_UUID128_INIT(
-        0x00, 0x27, 0x9c, 0x1a,
-        0x6b, 0x5d, 0xe1, 0xa7,
-        0x76, 0x4b, 0x4a, 0xfc,
-        0x01, 0x00, 0x2f, 0x6d
-    );
-static const ble_uuid128_t gatt_svr_chr_uuid =
-    BLE_UUID128_INIT(
-        0x00, 0x27, 0x9c, 0x1a,
-        0x6b, 0x5d, 0xe1, 0xa7,
-        0x76, 0x4b, 0x4a, 0xfc,
-        0x02, 0x00, 0x2f, 0x6d
-    );
 
 static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
     {
