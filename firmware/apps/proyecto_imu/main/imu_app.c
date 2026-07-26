@@ -1,23 +1,13 @@
-/*! @mainpage Template
+/*! @mainpage Monitor BLE del BMI270
  *
- * @section genDesc General Description
+ * @section genDesc Descripción general
  *
- * This section describes how the program works.
+ * Inicializa NVS, el servicio BLE y el acelerómetro BMI270. Cuando existe una
+ * muestra nueva, informa sus ejes y magnitud y publica los datos mediante una
+ * característica GATT. El muestreo se realiza cada 10 ms.
  *
- * <a href="https://drive.google.com/...">Operation Example</a>
- *
- * @section hardConn Hardware Connection
- *
- * |    Peripheral  |   ESP32   	|
- * |:--------------:|:--------------|
- * | 	PIN_X	 	| 	GPIO_X		|
- *
- *
- * @section changelog Changelog
- *
- * |   Date	    | Description                                    |
- * |:----------:|:-----------------------------------------------|
- * | 12/09/2023 | Document creation		                         |
+ * Si NimBLE está deshabilitado en la configuración de ESP-IDF, la aplicación
+ * solamente registra una advertencia.
  *
  * @author Albano Peñalva (albano.penalva@uner.edu.ar)
  *
@@ -49,6 +39,9 @@ static const char *TAG = "IMU_APP";
 /*==================[internal functions declaration]=========================*/
 
 /*==================[external functions definition]==========================*/
+/**
+ * @brief Punto de entrada de la aplicación de adquisición y publicación IMU.
+ */
 void app_main(void){
 	esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {

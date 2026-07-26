@@ -58,11 +58,10 @@ typedef struct {
  *
  * @param[in] bus Interfaz de transporte previamente creada e inicializada.
  *
- * @return Valor distinto de cero si la inicialización fue exitosa; cero en
- * caso de error.
- *
- * @warning La secuencia de inicialización del sensor todavía se encuentra en
- * desarrollo y esta API no debe considerarse funcional en el estado actual.
+ * @retval BMI270_OK El sensor quedó inicializado.
+ * @retval BMI270_ERR_INVALID_ARG El bus, su contexto o algún callback es NULL.
+ * @retval BMI270_FAIL Falló la comunicación, la carga de configuración o la
+ * configuración del acelerómetro.
  */
 bmi270_error_t BMI270Init(const bmi270_bus_t *bus);
 

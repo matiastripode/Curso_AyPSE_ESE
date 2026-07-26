@@ -1,11 +1,16 @@
 #ifndef BOARD_CONFIG_H
 #define BOARD_CONFIG_H
 
+/**
+ * @file board_config.h
+ * @brief Asignación de pines y parámetros físicos de la placa.
+ */
+
 /** @defgroup bsp BSP
- *  @brief Board support package layer.
+ *  @brief Capa de soporte de placa.
  *  @{
  *  @defgroup board_config Board Configuration
- *  @brief Pin mapping and board configuration
+ *  @brief Mapeo de pines y configuración de periféricos.
  *  @{
  */
 

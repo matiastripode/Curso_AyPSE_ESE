@@ -55,21 +55,16 @@ static bool initialized;
 /*==================[external data definition]===============================*/
 
 /*==================[internal functions definition]==========================*/
-/*
-  1. Escribir 0x00 en PWR_CONF para deshabilitar advanced power save.
-  2. Esperar al menos 450 us.
-  3. Escribir 0x00 en INIT_CTRL.
-  4. Recorrer el blob en bloques pares.
-  5. Para cada bloque:
-      - Calcular la dirección interna.
-      - Escribir INIT_ADDR_0 y INIT_ADDR_1.
-      - Escribir el bloque en INIT_DATA.
-
-  6. Escribir 0x01 en INIT_CTRL.
-  7. Esperar aproximadamente 150 ms.
-  8. Leer INTERNAL_STATUS.
-  9. Verificar que el estado sea init_ok.
-*/
+/**
+ * @brief Carga por bloques el archivo de configuración del sensor.
+ *
+ * Deshabilita el ahorro avanzado, transfiere el bloque oficial y comprueba el
+ * estado interno informado por el BMI270.
+ *
+ * @param[in] bus Transporte validado por BMI270Init().
+ * @return @ref BMI270_OK si el sensor acepta la configuración; de lo contrario,
+ * @ref BMI270_FAIL.
+ */
 static bmi270_error_t BMI270LoadConfig(const bmi270_bus_t *bus) {
     const uint8_t config_load_disable = 0x00U;
     const uint8_t config_load_enable = 0x01U;
@@ -176,6 +171,12 @@ static bmi270_error_t BMI270LoadConfig(const bmi270_bus_t *bus) {
   5. Opcionalmente releer los registros para confirmar la configuración.
 */
 
+/**
+ * @brief Configura el acelerómetro a 100 Hz, modo normal y rango de ±2 g.
+ *
+ * @param[in] bus Transporte validado por BMI270Init().
+ * @return @ref BMI270_OK si la configuración pudo escribirse y verificarse.
+ */
 static bmi270_error_t BMI270AccelConfig(const bmi270_bus_t *bus) {
     uint8_t acc_conf = BMI270_ACC_ODR_100_HZ | BMI270_ACC_BWP_NORMAL | BMI270_ACC_FILTER_PERF;
     uint8_t acc_range = BMI270_ACC_RANGE_2G;
@@ -263,6 +264,12 @@ static bmi270_error_t BMI270AccelConfig(const bmi270_bus_t *bus) {
     return BMI270_OK;
 }
 
+/**
+ * @brief Lee y decodifica los tres ejes crudos del acelerómetro.
+ *
+ * @param[out] accel Destino de la muestra.
+ * @return Resultado de la lectura o de la validación del estado del driver.
+ */
 static bmi270_error_t BMI270AccelReadRaw(bmi270_vector_t *accel) {
     uint8_t accel_data_raw[6];
     if (accel == NULL) {

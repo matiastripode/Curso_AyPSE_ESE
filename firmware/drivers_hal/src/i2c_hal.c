@@ -12,28 +12,11 @@
 #include "esp_log.h"
 #include <stdbool.h>
 #include <stdint.h>
-/* TODO: Include the specific ESP-IDF driver header for this peripheral.
- * This is the ONLY place in the project where ESP-IDF low-level headers
- * should be included. Examples:
- *   #include "driver/uart.h"
- *   #include "driver/spi_master.h"
- *   #include "esp_adc/adc_oneshot.h"
- */
 /*==================[macros and definitions]=================================*/
-/* TODO: Define private constants and internal data types here.
- * These are only visible within this file.
- * Example:
- *   #define BUFFER_SIZE 256
- *
- *   typedef struct {
- *       bool initialized;
- *   } template_handle_t;
- */
-
-  
 /*==================[internal data declaration]==============================*/
- typedef struct {
-       bool initialized;
+/** @brief Recursos y configuración persistentes del único bus admitido. */
+typedef struct {
+       bool initialized; /**< Indica si el dispositivo fue registrado. */
 	   i2c_master_bus_handle_t i2c_bus_handle;
 	   i2c_master_bus_config_t i2c_master_config;
 	   i2c_device_config_t dev_cfg;
@@ -49,6 +32,12 @@ static i2c_handle_t i2c_handler;
 /*==================[external data definition]===============================*/
 
 /*==================[internal functions definition]==========================*/
+/**
+ * @brief Convierte errores de ESP-IDF al dominio público de la HAL.
+ *
+ * @param[in] err Resultado devuelto por el driver I2C.
+ * @return Código equivalente de @ref i2c_hal_error_t.
+ */
 static i2c_hal_error_t I2CHalMapError(esp_err_t err) {
     switch (err) {
         case ESP_OK:
@@ -64,16 +53,6 @@ static i2c_hal_error_t I2CHalMapError(esp_err_t err) {
 
 /*==================[external functions definition]==========================*/
 
-/*
-  not initialized
-      → create bus, save configuration, return I2C_OK
-
-  already initialized with identical configuration
-      → do nothing, return I2C_OK
-
-  already initialized with different configuration
-      → return I2C_ERR_INVALID_STATE
-*/
 i2c_hal_error_t I2CHalInit(i2c_hal_controller_t controller, uint8_t device_address, uint32_t freq, gpio_t sda, gpio_t scl) {
 	if (controller >= I2C_HAL_CONTROLLER_COUNT) {
 		ESP_LOGE("I2C", "Failed to initialize master bus. Error: wrong controller number");

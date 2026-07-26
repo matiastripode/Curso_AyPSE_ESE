@@ -1,5 +1,9 @@
 /**
- * 
+ * @file ble_imu.c
+ * @brief Implementación del servicio GATT para muestras del BMI270.
+ *
+ * El módulo administra una única conexión BLE, conserva el último payload
+ * publicado y reinicia el advertising al finalizar una conexión.
  */
 
 /*==================[inclusions]=============================================*/
@@ -17,19 +21,20 @@
 /*==================[macros and definitions]=================================*/
 
 /*==================[internal data declaration]==============================*/
-static const char *TAG = "BLE_IMU";
-static bool initialized = false;
-static TaskHandle_t BLEIMUHostTaskHandle = NULL;
-#define BLE_IMU_PAYLOAD_SIZE 14U
-static uint8_t latest_payload[BLE_IMU_PAYLOAD_SIZE];
-static uint16_t accel_value_handle;
+static const char *TAG = "BLE_IMU"; /**< Etiqueta utilizada por ESP-IDF. */
+static bool initialized = false; /**< Indica que NimBLE y la tarea están activos. */
+static TaskHandle_t BLEIMUHostTaskHandle = NULL; /**< Tarea que ejecuta el host NimBLE. */
+#define BLE_IMU_PAYLOAD_SIZE 14U /**< Tamaño del payload de aceleración. */
+static uint8_t latest_payload[BLE_IMU_PAYLOAD_SIZE]; /**< Última muestra serializada. */
+static uint16_t accel_value_handle; /**< Handle de la característica de aceleración. */
 
-static uint16_t connection_handle = BLE_HS_CONN_HANDLE_NONE;
-static bool notifications_enabled;
-static uint8_t own_address_type;
+static uint16_t connection_handle = BLE_HS_CONN_HANDLE_NONE; /**< Conexión activa. */
+static bool notifications_enabled; /**< Estado de suscripción del cliente activo. */
+static uint8_t own_address_type; /**< Tipo de dirección inferido por NimBLE. */
 
-static uint16_t sample_sequence;
+static uint16_t sample_sequence; /**< Secuencia incluida en el próximo payload. */
 
+/** UUID de 128 bits del servicio de aceleración. */
 static const ble_uuid128_t gatt_svr_svc_uuid =
     BLE_UUID128_INIT(
         0x00, 0x27, 0x9c, 0x1a,
@@ -37,6 +42,7 @@ static const ble_uuid128_t gatt_svr_svc_uuid =
         0x76, 0x4b, 0x4a, 0xfc,
         0x01, 0x00, 0x2f, 0x6d
     );
+/** UUID de 128 bits de la característica de aceleración. */
 static const ble_uuid128_t gatt_svr_chr_uuid =
     BLE_UUID128_INIT(
         0x00, 0x27, 0x9c, 0x1a,
@@ -45,17 +51,20 @@ static const ble_uuid128_t gatt_svr_chr_uuid =
         0x02, 0x00, 0x2f, 0x6d
     );
 /*==================[internal functions declaration]=========================*/
-// Callback function declarations
+/** Callback de acceso a la característica GATT. */
 static int gatt_svr_access_cb(uint16_t conn_handle, uint16_t attr_handle,
     struct ble_gatt_access_ctxt *ctxt, void *arg);
+/** Callback centralizado de eventos GAP. */
 static int BLEIMUGapEvent(struct ble_gap_event *event, void *arg);
 
+/** @brief Codifica un entero de 16 bits en orden little-endian. */
 static void BLEIMUPutU16LE(uint8_t *dst, uint16_t value)
 {
     dst[0] = (uint8_t)(value & 0xFFU);
     dst[1] = (uint8_t)((value >> 8) & 0xFFU);
 }
 
+/** @brief Codifica un entero de 32 bits en orden little-endian. */
 static void BLEIMUPutU32LE(uint8_t *dst, uint32_t value)
 {
     dst[0] = (uint8_t)(value & 0xFFU);
@@ -64,14 +73,24 @@ static void BLEIMUPutU32LE(uint8_t *dst, uint32_t value)
     dst[3] = (uint8_t)((value >> 24) & 0xFFU);
 }
 
+/**
+ * @brief Ejecuta el bucle del host NimBLE dentro de una tarea FreeRTOS.
+ *
+ * @param[in] pvParameters Parámetro no utilizado.
+ */
 static void BLEIMUHostTask(void *pvParameters) {
     ESP_LOGI(TAG, "NimBLE host task started");
-    nimble_port_run(); // //This function will return only when nimble_port_stop() is executed.
+    nimble_port_run(); /* Retorna únicamente después de nimble_port_stop(). */
 
-    // Defensive programming: tasks must delete themselves if they break out of the loop
+    /* La tarea se elimina si el bucle del host finaliza. */
     vTaskDelete(NULL); 
 }
 
+/**
+ * @brief Configura los campos GAP e inicia advertising conectable.
+ *
+ * @return Cero si el advertising comenzó; código NimBLE en caso de error.
+ */
 static int BLEIMUStartAdvertising(void) {
     struct ble_hs_adv_fields fields = {0};
     struct ble_gap_adv_params adv_params = {0};
@@ -84,14 +103,12 @@ static int BLEIMUStartAdvertising(void) {
     fields.name = (const uint8_t *)ble_svc_gap_device_name();
     fields.name_len = strlen((const char *)fields.name);
     fields.name_is_complete = 1;
-    // 
     int rc = ble_gap_adv_set_fields(&fields);
 
     if (rc != 0) {
         ESP_LOGE(TAG, "failed to set advertising fields; rc=%d", rc);
         return rc;
     }
-    //
     rsp_fields.uuids128 = &gatt_svr_svc_uuid;
     rsp_fields.num_uuids128 = 1;
     rsp_fields.uuids128_is_complete = 1;
@@ -101,7 +118,6 @@ static int BLEIMUStartAdvertising(void) {
         ESP_LOGE(TAG, "failed to set scan response; rc=%d", rc);
         return rc;
     }
-    //
     adv_params.conn_mode = BLE_GAP_CONN_MODE_UND;
     adv_params.disc_mode = BLE_GAP_DISC_MODE_GEN;
     /* Start advertising */
@@ -115,9 +131,9 @@ static int BLEIMUStartAdvertising(void) {
     return 0;
 
 }
+/** @brief Inicia advertising cuando el host queda sincronizado. */
 static void BLEIMUOnSync(void) {
     int rc = 0;
-    //
     rc = ble_hs_util_ensure_addr(0);
     if (rc != 0) {
         ESP_LOGE(TAG, "device does not have any available bt address! error code: %d", rc);
@@ -128,7 +144,6 @@ static void BLEIMUOnSync(void) {
         ESP_LOGE(TAG, "failed to infer address type, error code: %d", rc);
         return;
     }
-    // Se reiniciará advertising.
     rc = BLEIMUStartAdvertising();
     if (rc != 0) {
         ESP_LOGE(TAG, "failed to start advertising; rc=%d", rc);
@@ -137,10 +152,16 @@ static void BLEIMUOnSync(void) {
     ESP_LOGI(TAG,  "NimBLE host synchronized");
 }
 
+/**
+ * @brief Registra en el log un reinicio del host NimBLE.
+ *
+ * @param[in] reason Motivo informado por la pila.
+ */
 static void BLEIMUOnReset(int reason) {
     ESP_LOGW(TAG, "NimBLE host reset; reason=%d", reason);
 }
 
+/** @brief Actualiza el estado local de suscripción a notificaciones. */
 static void gatt_svr_subscribe_cb(struct ble_gap_event *event) {
     /* Check connection handle */
     if (event->subscribe.conn_handle != BLE_HS_CONN_HANDLE_NONE) {
@@ -157,6 +178,11 @@ static void gatt_svr_subscribe_cb(struct ble_gap_event *event) {
         notifications_enabled = event->subscribe.cur_notify;
     }
 }
+/**
+ * @brief Procesa conexiones, desconexiones y suscripciones GAP.
+ *
+ * @return Cero para indicar que el evento fue consumido.
+ */
 static int BLEIMUGapEvent(struct ble_gap_event *event, void *arg) {
     int rc = 0;
     switch (event->type) {
@@ -168,7 +194,6 @@ static int BLEIMUGapEvent(struct ble_gap_event *event, void *arg) {
                 connection_handle = event->connect.conn_handle;
                 notifications_enabled = false;
             } else {
-                // Se reiniciará advertising.
                 rc = BLEIMUStartAdvertising();
                 if (rc != 0) {
                     ESP_LOGE(TAG, "failed to start advertising; rc=%d", rc);
@@ -180,7 +205,6 @@ static int BLEIMUGapEvent(struct ble_gap_event *event, void *arg) {
                event->disconnect.reason);
             connection_handle = BLE_HS_CONN_HANDLE_NONE;
             notifications_enabled = false;
-            // Se reiniciará advertising.
             rc = BLEIMUStartAdvertising();
             if (rc != 0) {
                 ESP_LOGE(TAG, "failed to start advertising; rc=%d", rc);
@@ -206,6 +230,7 @@ static int BLEIMUGapEvent(struct ble_gap_event *event, void *arg) {
 }
 /*==================[internal data definition]===============================*/
 
+/** Definición del servicio y la característica GATT de aceleración. */
 static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
     {
         .type = BLE_GATT_SVC_TYPE_PRIMARY,
@@ -228,28 +253,33 @@ static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
 
 /*==================[internal functions definition]==========================*/
 
+/**
+ * @brief Copia un payload a un mbuf y envía una notificación GATT.
+ *
+ * @return Cero si NimBLE aceptó la notificación; código NimBLE en caso de error.
+ */
 static int send_custom_notification(uint16_t conn_handle, uint16_t attr_handle, uint8_t *data, uint16_t len) {
     struct os_mbuf *om;
     int rc;
 
-    // Allocate and copy flat data into an mbuf packet buffer
+    /* NimBLE toma propiedad del mbuf al intentar la notificación. */
     om = ble_hs_mbuf_from_flat(data, len);
     if (!om) {
         return BLE_HS_ENOMEM; // Memory allocation failed
     }
 
-    // Send the custom notification
-    // Note: ble_gatts_notify_custom consumes the mbuf `om` regardless of outcome
     rc = ble_gatts_notify_custom(conn_handle, attr_handle, om);
     
     if (rc != 0) {
-        // Handle transmission error (e.g., queue full or disconnected)
         return rc;
     }
 
     return 0;
 }
 
+/**
+ * @brief Atiende lecturas GATT devolviendo el último payload disponible.
+ */
 static int gatt_svr_access_cb(uint16_t conn_handle, uint16_t attr_handle,
                               struct ble_gatt_access_ctxt *ctxt, void *arg) 
 {
@@ -267,16 +297,20 @@ static int gatt_svr_access_cb(uint16_t conn_handle, uint16_t attr_handle,
     }
 }
 
+/**
+ * @brief Registra los servicios estándar y el servicio GATT de aceleración.
+ *
+ * @return Resultado expresado como @ref ble_imu_error_t.
+ */
 static ble_imu_error_t BLERegisterServiceGATT() {
     
     int rc;
 
-    // Reset runtime GATT tracking configurations
+    /* Reinicia el registro antes de declarar los servicios. */
     rc = ble_gatts_reset();
     if (rc != 0) {
         return rc;
     }
-    // Register standard device and identity services (GAP)
     ble_svc_gap_init();
 
     rc = ble_svc_gap_device_name_set("BMI270-IMU");
@@ -286,7 +320,6 @@ static ble_imu_error_t BLERegisterServiceGATT() {
     }
     ble_svc_gatt_init();
 
-    // Inject your custom array definition into the host stack
     rc = ble_gatts_count_cfg(gatt_svr_svcs);
     if(rc != 0) {
         return BLE_IMU_ERR_STACK;
@@ -304,23 +337,20 @@ ble_imu_error_t BLEIMUInit(void) {
     if (initialized == true) {
         return BLE_IMU_OK;
     }
-    // 1.
     int result_nimble = nimble_port_init();
     if (result_nimble != 0) {
         ESP_LOGE(TAG,  "nimble_port_init Failed");
         return BLE_IMU_ERR_STACK;
     }
-    // 2. asigna los dos callbacks en ble_hs_cfg y crea la tarea. configurar ble_hs_cfg.sync_cb y reset_cb
+    /* NimBLE invoca estos callbacks al sincronizarse o reiniciarse. */
     ble_hs_cfg.sync_cb  = BLEIMUOnSync;
     ble_hs_cfg.reset_cb = BLEIMUOnReset;
-    // 3. 
     ble_imu_error_t ble_gatt_result = BLERegisterServiceGATT();
     if (ble_gatt_result != BLE_IMU_OK) {
         ESP_LOGE(TAG,  "GATT initialization failed");
         return BLE_IMU_ERR_STACK;
     }
 
-    // 3. 
     BaseType_t result = xTaskCreate(
         BLEIMUHostTask,      // Function pointer
         "BLEIMUHostTask",    // Text name for debugging
@@ -330,7 +360,6 @@ ble_imu_error_t BLEIMUInit(void) {
         &BLEIMUHostTaskHandle        // Task handle storage
     );
 
-    // 4. Verify successful creation before starting the scheduler
     if (result != pdPASS) {
         BLEIMUHostTaskHandle = NULL;
         result_nimble = nimble_port_deinit();
@@ -346,16 +375,14 @@ ble_imu_error_t BLEIMUInit(void) {
 }
 
 ble_imu_error_t BLEIMUPublishAccel(const ble_imu_accel_sample_t *sample) {
-    // validar sample
     if (sample == NULL) {
         return BLE_IMU_ERR_INVALID_ARG;
     }
-    // validar initialized
     if (!initialized) {
         return BLE_IMU_ERR_INVALID_STATE;
     }
 
-    // Serializar siempre la muestra, incluso sin conexión:
+    /* La lectura GATT expone la muestra aunque no pueda notificarse. */
     latest_payload[0] = 1U;  /* protocol version */
     latest_payload[1] = 0U;  /* reserved flags */
 
@@ -366,15 +393,12 @@ ble_imu_error_t BLEIMUPublishAccel(const ble_imu_accel_sample_t *sample) {
     BLEIMUPutU16LE(&latest_payload[12], (uint16_t)sample->z);
     sample_sequence++;
 
-    // comprobar conexion
     if (connection_handle == BLE_HS_CONN_HANDLE_NONE) {
         return BLE_IMU_NOT_CONNECTED;
     }
-    // comprobar subscripcion
     if (!notifications_enabled) {
         return BLE_IMU_NOT_SUBSCRIBED;
     }    
-    // notificar
     int result = send_custom_notification(connection_handle, accel_value_handle, latest_payload, sizeof(latest_payload));
     if (result != 0) {
         return BLE_IMU_ERR_STACK;
