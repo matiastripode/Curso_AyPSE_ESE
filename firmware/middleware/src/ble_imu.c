@@ -28,6 +28,8 @@ static uint16_t connection_handle = BLE_HS_CONN_HANDLE_NONE;
 static bool notifications_enabled;
 static uint8_t own_address_type;
 
+static uint16_t sample_sequence;
+
 static const ble_uuid128_t gatt_svr_svc_uuid =
     BLE_UUID128_INIT(
         0x00, 0x27, 0x9c, 0x1a,
@@ -47,6 +49,20 @@ static const ble_uuid128_t gatt_svr_chr_uuid =
 static int gatt_svr_access_cb(uint16_t conn_handle, uint16_t attr_handle,
     struct ble_gatt_access_ctxt *ctxt, void *arg);
 static int BLEIMUGapEvent(struct ble_gap_event *event, void *arg);
+
+static void BLEIMUPutU16LE(uint8_t *dst, uint16_t value)
+{
+    dst[0] = (uint8_t)(value & 0xFFU);
+    dst[1] = (uint8_t)((value >> 8) & 0xFFU);
+}
+
+static void BLEIMUPutU32LE(uint8_t *dst, uint32_t value)
+{
+    dst[0] = (uint8_t)(value & 0xFFU);
+    dst[1] = (uint8_t)((value >> 8) & 0xFFU);
+    dst[2] = (uint8_t)((value >> 16) & 0xFFU);
+    dst[3] = (uint8_t)((value >> 24) & 0xFFU);
+}
 
 static void BLEIMUHostTask(void *pvParameters) {
     ESP_LOGI(TAG, "NimBLE host task started");
@@ -330,6 +346,39 @@ ble_imu_error_t BLEIMUInit(void) {
 }
 
 ble_imu_error_t BLEIMUPublishAccel(const ble_imu_accel_sample_t *sample) {
+    // validar sample
+    if (sample == NULL) {
+        return BLE_IMU_ERR_INVALID_ARG;
+    }
+    // validar initialized
+    if (!initialized) {
+        return BLE_IMU_ERR_INVALID_STATE;
+    }
+
+    // Serializar siempre la muestra, incluso sin conexión:
+    latest_payload[0] = 1U;  /* protocol version */
+    latest_payload[1] = 0U;  /* reserved flags */
+
+    BLEIMUPutU16LE(&latest_payload[2], sample_sequence);
+    BLEIMUPutU32LE(&latest_payload[4], sample->timestamp_ms);
+    BLEIMUPutU16LE(&latest_payload[8],  (uint16_t)sample->x);
+    BLEIMUPutU16LE(&latest_payload[10], (uint16_t)sample->y);
+    BLEIMUPutU16LE(&latest_payload[12], (uint16_t)sample->z);
+    sample_sequence++;
+
+    // comprobar conexion
+    if (connection_handle == BLE_HS_CONN_HANDLE_NONE) {
+        return BLE_IMU_NOT_CONNECTED;
+    }
+    // comprobar subscripcion
+    if (!notifications_enabled) {
+        return BLE_IMU_NOT_SUBSCRIBED;
+    }    
+    // notificar
+    int result = send_custom_notification(connection_handle, accel_value_handle, latest_payload, sizeof(latest_payload));
+    if (result != 0) {
+        return BLE_IMU_ERR_STACK;
+    }
     return BLE_IMU_OK;
 }
 
